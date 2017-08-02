@@ -12,6 +12,9 @@ g ∘ f = λ a → g (f a)
 ∘assoc : {A B C D : Set} → {f : A → B} → {g : B → C} → {h : C → D} → h ∘ (g ∘ f) ≡ (h ∘ g) ∘ f
 ∘assoc = refl
 
+etaEquality : {A B : Set} → {f : A → B} → f ≡ λ x → f x
+etaEquality = refl
+
 -- 2
 
 infixr 2 _×_
@@ -71,5 +74,5 @@ uniq× : {A B : Set} → {ab : A × B} → (π₁ ab , π₂ ab) ≡ ab
 uniq× {ab = (_ , _)} = refl
 
 ind× : {A B : Set} → {C : A × B → Set} → ((a : A) → (b : B) → C (a , b)) → (ab : A × B) → C ab
-ind× g ab@(a , b) = g (π₁ ab) (π₂ ab)
+ind× g ab@(_ , _) = g (π₁ ab) (π₂ ab)
 
