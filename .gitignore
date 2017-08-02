@@ -1,0 +1,14 @@
+.stack-work
+.DS_Store
+*.agdai
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.ptb
+*.snm
+*.out
+*.toc
+*.vrb
+comment.cut
