@@ -169,6 +169,9 @@ uniq⊗i true  = refl
 uniq⊗ : {A B : Set} → {ab : A ⊗ B} → pi1 ab · pi2 ab ≡ ab
 uniq⊗ = function-extensionality uniq⊗i
 
+transportType : {A : Set} → {B : A → Set} → {f g : (a : A) → B a} → (f ≡ g) → (C : ((a : A) → B a) → Set) → C f → C g
+transportType refl _ x = x
+
 ind⊗ : {A B : Set} → {C : A ⊗ B → Set} → ((a : A) → (b : B) → C (a · b)) → (x : A ⊗ B) → C x
-ind⊗ {A} {B} g ab rewrite (uniq⊗ {A} {B} {ab}) = {!!} -- g (pi1 ab) (pi2 ab)
+ind⊗ {A} {B} {C} g ab = transportType uniq⊗ C (g (pi1 ab) (pi2 ab))
 
