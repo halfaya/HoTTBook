@@ -1,10 +1,23 @@
 {-# OPTIONS --without-K #-}
 
+{-
+QUESTIONS:
+1. Does J violate Frank Pfenning's compatibility rules?
+2. Is it possible to for two types to be definitionally equal in MLTT?
+3. Could we add function extensionality as a constructor of _≡_ ?
+-}
+
 module Chapter1 where
 
 infix 4 _≡_
 data _≡_ {a} {A : Set a} (x : A) : A → Set a where
   instance refl : x ≡ x
+
+sym : {A : Set} → {a b : A} → a ≡ b → b ≡ a
+sym refl = refl
+
+trans : {A : Set} → {a b c : A} → a ≡ b → b ≡ c → a ≡ c
+trans refl refl = refl
 
 cong : {A B : Set} → {a a' : A} → (f : A → B) → a ≡ a' → f a ≡ f a'
 cong f refl = refl
@@ -92,6 +105,8 @@ data ℕ : Set where
   zero : ℕ
   suc  : ℕ → ℕ
 
+{-# BUILTIN NATURAL ℕ #-}
+
 natRec : {C : Set} → C → (ℕ → C → C) → ℕ → C
 natRec z s zero    = z
 natRec z s (suc n) = s n (natRec z s n)
@@ -107,9 +122,16 @@ pred (suc n) = n
 natRec' : {C : Set} → C → (ℕ → C → C) → ℕ → C
 natRec' z s n = natIter z (s (pred n)) n
 
+natRec2 : {C : Set} → C → (ℕ → C → C) → ℕ → C
+natRec2 {C} z s n = π₂ (natIter {ℕ × C} (zero , z) (λ p → (suc (π₁ p) , s (π₁ p) (π₂ p))) n)
+
+rec'≡rec2 : {C : Set} → (z : C) → (s : (ℕ → C → C))  → (n : ℕ) → natRec' z s n ≡ natRec2 z s n
+rec'≡rec2 z s zero    = refl
+rec'≡rec2 z s (suc n) = let x = rec'≡rec2 z s n in {!!}
+
 rec≡rec' : {C : Set} → (z : C) → (s : (ℕ → C → C))  → (n : ℕ) → natRec z s n ≡ natRec' z s n
 rec≡rec' z s zero    = refl
-rec≡rec' z s (suc n) = let x = rec≡rec' z s n in cong (s n) {!!}
+rec≡rec' z s (suc n) = let x = rec≡rec' z s n in {!!}
 
 -- 5
 
@@ -121,15 +143,15 @@ boolRec : ∀{ℓ} → {C : Set ℓ} → C → C → Bool → C
 boolRec f t false = f
 boolRec f t true  = t
 
-infixr 1 _+_ _⊕_
+infixr 1 _⊎_ _⊕_
 
-data _+_ (A B : Set) : Set where
-  inl : A → A + B
-  inr : B → A + B
+data _⊎_ (A B : Set) : Set where
+  inl : A → A ⊎ B
+  inr : B → A ⊎ B
 
-ind+ : {A B : Set} → {C : A + B → Set} → ((a : A) → C (inl a)) → ((b : B) → C (inr b)) → (x : A + B) → C x
-ind+ g₀ g₁ (inl a) = g₀ a
-ind+ g₀ g₁ (inr b) = g₁ b
+ind⊎ : {A B : Set} → {C : A ⊎ B → Set} → ((a : A) → C (inl a)) → ((b : B) → C (inr b)) → (x : A ⊎ B) → C x
+ind⊎ g₀ g₁ (inl a) = g₀ a
+ind⊎ g₀ g₁ (inr b) = g₁ b
 
 _⊕_ : (A B : Set) → Set
 A ⊕ B = Σ Bool (λ x -> boolRec A B x)
@@ -169,9 +191,95 @@ uniq⊗i true  = refl
 uniq⊗ : {A B : Set} → {ab : A ⊗ B} → pi1 ab · pi2 ab ≡ ab
 uniq⊗ = function-extensionality uniq⊗i
 
-transportType : {A : Set} → {B : A → Set} → {f g : (a : A) → B a} → (f ≡ g) → (C : ((a : A) → B a) → Set) → C f → C g
-transportType refl _ x = x
+coerce : {A : Set} → {B : A → Set} → {f g : (a : A) → B a} → (f ≡ g) → (C : ((a : A) → B a) → Set) → C f → C g
+coerce refl _ x = x
 
 ind⊗ : {A B : Set} → {C : A ⊗ B → Set} → ((a : A) → (b : B) → C (a · b)) → (x : A ⊗ B) → C x
-ind⊗ {A} {B} {C} g ab = transportType uniq⊗ C (g (pi1 ab) (pi2 ab))
+ind⊗ {A} {B} {C} g ab = coerce uniq⊗ C (g (pi1 ab) (pi2 ab))
 
+-- 7
+
+-- LATER
+
+-- 8
+
+_+_ : ℕ → ℕ → ℕ
+m + n = natRec n (λ _ x → suc x) m
+
+_*_ : ℕ → ℕ → ℕ
+m * n = natRec 0 (λ _ x → x + n) m
+
+_^_ : ℕ → ℕ → ℕ
+m ^ n = natRec 1 (λ _ x → x * m) n
+
+natInd : {C : ℕ → Set} → C zero → ((n : ℕ) → C n → C (suc n)) → (n : ℕ) → C n
+natInd z s zero    = z
+natInd z s (suc n) = s n (natInd z s n)
+
+-- TODO: Semiring
+
+-- 9
+
+data Fin : ℕ → Set where
+  zero : {n : ℕ} → Fin (suc n)
+  suc  : {n : ℕ} → Fin n → Fin (suc n)
+
+fmax : (n : ℕ) → Fin (suc n)
+fmax zero    = zero
+fmax (suc n) = suc (fmax n)
+
+-- 10
+
+-- TODO
+
+-- 11
+
+data ⊥ : Set where
+
+¬ : Set → Set
+¬ A = A → ⊥
+
+¬¬¬A→¬A : {A : Set} → ¬ (¬ (¬ A)) → ¬ A
+¬¬¬A→¬A f = λ a → f (λ g → g a)
+
+¬A→¬¬¬A : {A : Set} → ¬ A → ¬ (¬ (¬ A)) 
+¬A→¬¬¬A f = λ g → g f
+
+-- 12
+
+12i : {A B : Set} → A → (B → A)
+12i a = λ _ → a
+
+12ii : {A : Set} → A → ¬ (¬ A)
+12ii a = λ f → f a
+
+12iii : {A B : Set} → ¬ A ⊎ ¬ B → ¬ (A × B)
+12iii (inl f) (a , b) = f a
+12iii (inr g) (a , b) = g b
+
+-- 13
+
+¬¬LEM : {P : Set} → ¬ (¬ (P ⊎ ¬ P))
+¬¬LEM = λ f → f (inr (λ p → f (inl p)))
+
+-- 14
+
+-- LATER
+
+-- 15
+
+-- LATER
+
+-- 16
+
+n≡n+0 : (n : ℕ) → n ≡ n + zero
+n≡n+0 zero    = refl
+n≡n+0 (suc n) = cong suc (n≡n+0 n)
+
++-suc : (m n : ℕ) → m + suc n ≡ suc (m + n)
++-suc zero    n = refl
++-suc (suc m) n = cong suc (+-suc m n)
+
++-comm : (m n : ℕ) → m + n ≡ n + m
++-comm zero n    = n≡n+0 n
++-comm (suc m) n = trans (cong suc (+-comm m n)) (sym (+-suc n m))
