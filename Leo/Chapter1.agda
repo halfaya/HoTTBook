@@ -83,7 +83,9 @@ p₁ : {A : Set} → {B : A → Set} → Σ A B → A
 p₁ = recΣ (λ a _ → a)
 
 p₂ : {A : Set} → {B : A → Set} → (ab : Σ A B) → B (proj₁ ab)
-p₂ ab@(a , b) = recΣ (λ x y → {!!}) ab
+p₂ {A} {B} ab =
+  let f = λ x y → {!!}
+  in recΣ f ab
 
 proj₁≡p₁ : {A : Set} → {B : A → Set} → {ab : Σ A B} → proj₁ ab ≡ p₁ ab
 proj₁≡p₁ = refl
@@ -230,8 +232,16 @@ fmax (suc n) = suc (fmax n)
 
 -- 10
 
--- TODO
+ack : ℕ → ℕ → ℕ
+ack zero    n       = suc n
+ack (suc m) zero    = ack m 1
+ack (suc m) (suc n) = ack m (ack (suc m) n)
 
+ackr : ℕ → ℕ → ℕ
+ackr m n =
+  natRec (suc n)
+         (λ a b → {!!})  -- TODO: Probably need aux function.
+         m
 -- 11
 
 data ⊥ : Set where
@@ -268,7 +278,7 @@ data ⊥ : Set where
 
 -- 15
 
--- LATER
+--idIndisc : {A : Set} → (C : A → Set) → Σ (f : (x y : A) → (p : x ≡ y) → C x → C y) _
 
 -- 16
 
