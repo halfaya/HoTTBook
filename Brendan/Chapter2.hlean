@@ -3,11 +3,13 @@
 local notation f ` $ `:1 a:0 := f a
 local notation `⟨`a`,`b`⟩` := sigma.mk a b
 local infixr ` ▸ `:75 := eq.subst
+local infixr ` ∘ `:60 := function.compose
 
 namespace ch2
 
 variable {A : Type}
 
+section one
 -- Lemma 2.1.1
 lemma inverse_path : ∀ {x y : A}, (x = y) → (y = x)
 | x x (eq.refl x) := eq.refl x
@@ -113,6 +115,31 @@ definition pointed.{u} : Type.{u + 1} := Σ (A : Type.{u}), A
 definition higher_loop_space : ℕ → pointed → pointed
 | 0            ⟨A, a⟩ := ⟨A, a⟩
 | (nat.succ n) ⟨A, a⟩ := higher_loop_space n ⟨Ω(A,a), eq.refl a⟩
+
+end one
+
+section two
+variables {B C : Type} (f : A → B) (g : B → C)
+
+-- Lemma 2.2.1
+definition ap : ∀ {x y}, x = y → f x = f y
+| x x (eq.refl x) := eq.refl $ f x
+notation function`[`equality`]` := ap function equality
+
+-- Lemma 2.2.2
+lemma distribute_ap_concat_path : ∀ {x y z} (p : x = y) (q : y = z), f[p • q] = f[p] • f[q]
+| x x x (eq.refl x) (eq.refl x) := eq.refl $ eq.refl $ f x
+
+lemma ap_commutes_with_inverse : ∀ {x y} (p : x = y), f[p⁻¹] = f[p]⁻¹
+| x x (eq.refl x) := eq.refl $ eq.refl $ f x
+
+lemma composition_commutes_with_ap : ∀ {x y} (p : x = y), (ap g ∘ ap f) p = ap (g ∘ f) p
+| x x (eq.refl x) := eq.refl $ eq.refl $ g ∘ f $ x
+
+lemma ap_id_eq_id : ∀ {x y} (p : x = y), (@id A)[p] = p
+| x x (eq.refl x) := eq.refl $ eq.refl x
+
+end two
 
 namespace exercises
 
