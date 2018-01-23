@@ -170,18 +170,65 @@ p⁻¹⁻¹≡p {A} {x} {y} p = ind A
 p●[q●r]≡[p●q]●r : {A : Set} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → p ● (q ● r) ≡ (p ● q) ● r
 p●[q●r]≡[p●q]●r {A} {x} {y} {z} {w} p q r =
   (ind A
-      (λ x y p → (z w : A) → (q : y ≡ z) → (r : z ≡ w) → p ● (q ● r) ≡ (p ● q) ● r)
-      (λ x → λ z w q _ → (ind A
-                              (λ y z q' → (w : A) → (r : z ≡ w) → refl ● (q ● r) ≡ (refl ● q) ● r)
-                              (λ y → λ w r → (ind A
-                                                  (λ z w r' → refl ● (refl ● r) ≡ (refl ● refl) ● r)
-                                                  (λ z → refl)
-                                                  z w r))
-                              y z q) w r)
-      x y p) z w q r
+       (λ x y p → (z w : A) → (q : y ≡ z) → (r : z ≡ w) → p ● (q ● r) ≡ (p ● q) ● r)
+       (λ x → λ z w q r → (ind A
+                               (λ x z q → (w : A) → (r : z ≡ w) → refl ● (q ● r) ≡ (refl ● q) ● r)
+                               (λ x → λ w r → (ind A
+                                                   (λ x w r → refl ● (refl ● r) ≡ (refl ● refl) ● r)
+                                                   (λ x → refl)
+                                                   x w r))
+                               x z q) w r)
+       x y p) z w q r
 
 p●[q●r]≡[p●q]●r' : {A : Set} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → p ● (q ● r) ≡ (p ● q) ● r
 p●[q●r]≡[p●q]●r' {A} {x} {y} {z} {w} refl refl refl = refl {lzero} {x ≡ x} {refl {lzero} {A} {x}}
+
+-- Lemma 2.2.1
+
+ap : {A B : Set} → {x y : A} → (f : A → B) → (x ≡ y) → (f x ≡ f y)
+ap {A} {B} {x} {y} f p
+   = ind A
+         (λ x y p → f x ≡ f y)
+         (λ x → refl)
+         x y p
+
+-- Lemma 2.2.2.i
+
+apfpqapfpapfq : {A B : Set} → {x y z : A} → (f : A → B) → (p : x ≡ y) → (q : y ≡ z) → ap f (p ● q) ≡ ap f p ● ap f q
+apfpqapfpapfq {A} {B} {x} {y} {z} f p q
+  = (ind A
+         (λ x y p → (z : A) → (q : y ≡ z) → ap f (p ● q) ≡ (ap f p ● ap f q))
+         (λ x → λ z q → (ind A
+                           (λ x z q → ap f (refl ● q) ≡ ap f refl ● ap f q)
+                           (λ x → refl)
+                           x z q))
+        x y p) z q
+
+-- Lemma 2.2.2.ii
+
+apfp-1≡apfp-1 : {A B : Set} → { x y : A } → {f : A → B} → {p : x ≡ y} → ap f (p ⁻¹) ≡ (ap f p) ⁻¹
+apfp-1≡apfp-1 {A} {B} {x} {y} {f} {p}
+  = (ind A
+         (λ x y p → (f : A → B) → ap f (p ⁻¹) ≡ (ap f p) ⁻¹)
+         (λ x → λ f → refl)
+         x y p) f
+
+-- Lemma 2.2.2.iii
+
+_∘_ : {A B C : Set} → (B → C) → (A → B) → (A → C)
+f ∘ g = λ x → f (g x)
+
+apgapfp≡apg◦fp : {A B C : Set} → {x y z : A} → (f : A → B) → (g : B → C) → (p : x ≡ y) → ap g (ap f p) ≡ ap (g ∘ f) p
+apgapfp≡apg◦fp {A} {B} {C} {x} {y} {z} f g p
+  = (ind A
+         (λ x y p → (f : A → B) → (g : B → C) → ap g (ap f p) ≡ ap (g ∘ f) p)
+         (λ x → λ f g → refl) x y p) f g
+
+id : (A : Set) → A → A
+id A x = x
+
+apidAp≡p : {A : Set} → {x y : A} → (p : x ≡ y) → ap (id A) p ≡ p
+apidAp≡p {A} {x} {y} p = ind A (λ x y p → ap (id A) p ≡ p) (λ x → refl) x y p
 
 -- Lemma 2.3.2
 
