@@ -237,3 +237,21 @@ transport P refl q = q
 
 lift : {A : Set} → {x y : A} → (P : A → Set) → (u : P x) → (p : x ≡ y) → (x , u) ≡ (y , transport P p u)
 lift P u refl = refl
+
+-- Definition 2.4.1
+
+_~_ : {A : Set} → {P : A → Set} → (f g : (x : A) → P x) → (x : A) → Set
+_~_ {A} {P} f g x = f x ≡ g x
+
+-- Lemma 2.4.2
+
+-- f~f : {A : Set} → {P : A → Set} → (f : (x : A) → P x) → (f ~ f)
+
+-- f~g→g~f :
+
+-- f~g→g~h→f~h :
+
+-- Lemma 2.4.3
+
+Hx●gp≡fp●Hy : {A B : Set} → (x y : A) → (p : x ≡ y) → (f g : A → B) → (H x : (f ~ g) x) → (H x ● g p) ≡ (f p ● H y)
+Hx●gp≡fp●Hy {A} {B} x y p f g H = ?
