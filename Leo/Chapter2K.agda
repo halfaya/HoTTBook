@@ -54,6 +54,5 @@ ok271' A P x u .u refl = refl
 
 -- version with J and K
 
-ok271K : (A B : Set) → (x : A) → (u v : B) → (x × u) ≡ (x × v) → u ≡ v
-ok271K A P x u v p = {!!}
-
+--ok271K : (A B : Set) → (x : A) → (u v : B) → (x × u) ≡ (x × v) → u ≡ v
+--ok271K A P x u v p = {!!}
