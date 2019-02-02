@@ -132,7 +132,7 @@ p◾[q◾r]≡[p◾q]◾r {α} {A} {x} {y} {z} {w} p q r =
 p◾[q◾r]≡[p◾q]◾r' : {α : Level} {A : Set α} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → p ◾ (q ◾ r) ≡ (p ◾ q) ◾ r
 p◾[q◾r]≡[p◾q]◾r' {α} {A} {x} {y} {z} {w} refl refl refl = refl {α} {x ≡ x} {refl {α} {A} {x}}
 
--- Theorem 2.1.6 (Eckmann-Hilton)
+-- Theorem 2.1.6 (Eckmann-Hiltona)
 
 Ω : {α : Level} (A : Set α) → (a : A) → Set α
 Ω {α} A a = _≡_ {α} {A} a a
@@ -170,11 +170,11 @@ transLift refl refl = refl
 ★′≡◾ : {ℓ : Level} {A : Set ℓ} {a : A} (α β : refl {ℓ} {A} {a} ≡ refl {ℓ} {A} {a}) → α ★′ β ≡ β ◾ α
 ★′≡◾ α β = transLift (transLemma β) (transLemma α)
 
-★≡★′ : {ℓ : Level} {A : Set ℓ} {a b c : A} (p q : a ≡ b) (r s : b ≡ c) (α : p ≡ q) (β : r ≡ s) → α ★ β ≡ α ★′ β
-★≡★′ refl .refl refl .refl refl refl = refl
+★≡★′ : {ℓ : Level} {A : Set ℓ} {a b c : A} {p q : a ≡ b} {r s : b ≡ c} (α : p ≡ q) (β : r ≡ s) → α ★ β ≡ α ★′ β
+★≡★′ {p = refl} {q = .refl} {r = refl} {s = .refl} refl refl = refl
 
-Ω²-commutative : {ℓ : Level} (A : Set ℓ) → (a : A) → (α β : Ω² A a) → α ◾ β ≡ β ◾ α
-Ω²-commutative A a α β = (★≡◾ α β)⁻¹ ◾ (★≡★′ refl refl refl refl α β) ◾ (★′≡◾ α β)
+Ω²-commutative : {ℓ : Level} {A : Set ℓ}{a : A} (α β : Ω² A a) → α ◾ β ≡ β ◾ α
+Ω²-commutative α β = (★≡◾ α β)⁻¹ ◾ (★≡★′ α β) ◾ (★′≡◾ α β)
 
 -- Lemma 2.3.2
 
