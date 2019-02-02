@@ -132,7 +132,7 @@ p◾[q◾r]≡[p◾q]◾r {α} {A} {x} {y} {z} {w} p q r =
 p◾[q◾r]≡[p◾q]◾r' : {α : Level} {A : Set α} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → p ◾ (q ◾ r) ≡ (p ◾ q) ◾ r
 p◾[q◾r]≡[p◾q]◾r' {α} {A} {x} {y} {z} {w} refl refl refl = refl {α} {x ≡ x} {refl {α} {A} {x}}
 
--- Theorem 2.1.6 (Eckmann-Hiltona)
+-- Theorem 2.1.6 (Eckmann-Hilton)
 
 Ω : {α : Level} (A : Set α) → (a : A) → Set α
 Ω {α} A a = _≡_ {α} {A} a a
@@ -154,7 +154,7 @@ _★_ {q = q} {r = r} α β = (α ◾ʳ r) ◾ (q ◾ˡ β)
 _★′_ : {ℓ : Level} {A : Set ℓ} {a b c : A} {p q : a ≡ b} {r s : b ≡ c} (α : p ≡ q) → (β : r ≡ s) → p ◾ r ≡ q ◾ s
 _★′_ {p = p} {s = s} α β = (p ◾ˡ β) ◾ (α ◾ʳ s)
 
-ap : {α β : Level} {A : Set α} {B : Set β} {a b : A} (f : A → B) → (a ≡ b) → f a ≡ f b
+ap : {α β : Level} {A : Set α} {B : Set β} {a b : A} (f : A → B) → a ≡ b → f a ≡ f b
 ap f refl = refl
 
 transLemma : {ℓ : Level} {A : Set ℓ} {a : A} (α : refl {ℓ} {A} {a} ≡ refl {ℓ} {A} {a}) →
