@@ -176,6 +176,17 @@ transLift refl refl = refl
 Ω²-commutative : {ℓ : Level} {A : Set ℓ}{a : A} (α β : Ω² A a) → α ◾ β ≡ β ◾ α
 Ω²-commutative α β = (★≡◾ α β)⁻¹ ◾ (★≡★′ α β) ◾ (★′≡◾ α β)
 
+-- If UIP holds at A and a, then Ω is also commutative since everything is forced to be refl
+
+UIP : {ℓ : Level} (A : Set ℓ)(a : A) → Set ℓ
+UIP A a = (p : a ≡ a) → p ≡ refl
+
+UIP→transrefl : {ℓ : Level} {A : Set ℓ}{a : A} (uip : UIP A a) (α β : Ω A a) → α ◾ β ≡ refl
+UIP→transrefl uip α β = ap (_◾ β) (uip α) ◾ (p≡refl◾p β)⁻¹ ◾ uip β
+
+UIP→Ω-commutative : {ℓ : Level} {A : Set ℓ}{a : A} (uip : UIP A a) (α β : Ω A a) → α ◾ β ≡ β ◾ α
+UIP→Ω-commutative uip α β = UIP→transrefl uip α β ◾ (UIP→transrefl uip β α)⁻¹
+
 -- Lemma 2.3.2
 
 transport : {α β : Level} {A : Set α} → {x y : A} → (P : A → Set β) → (p : x ≡ y) → P x → P y
