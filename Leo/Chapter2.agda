@@ -4,9 +4,20 @@ module Chapter2 where
 
 open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
 
+-- from stdlib
+_∘_ : ∀ {a b c}
+        {A : Set a} {B : A → Set b} {C : {x : A} → B x → Set c} →
+        (∀ {x} (y : B x) → C y) → (g : (x : A) → B x) →
+        ((x : A) → C (g x))
+f ∘ g = λ x → f (g x)
+
 infix 4 _≡_
 data _≡_ {α : Level} {A : Set α} (x : A) : A → Set α where
   refl : x ≡ x
+
+{-# BUILTIN EQUALITY _≡_ #-}
+
+infixr 4 _,_
 
 data Σ {α β : Level} (A : Set α) (B : A → Set β) : Set (α ⊔ β) where
   _,_ : (a : A) → B a → Σ A B
@@ -38,27 +49,21 @@ indEq A C c x .x (refl .x) = c x
 -- Lemma 2.1.1
 
 sym : {α : Level} (A : Set α) → (a b : A) → a ≡ b → b ≡ a
-sym A a .a refl = refl
-{-
 sym A a b p = ind A (λ x y _ → y ≡ x) (λ _ → refl) a b p
--}
 
 _⁻¹ : {α : Level} {A : Set α} → {a b : A} → a ≡ b → b ≡ a
-_⁻¹ {α} {A} {a} {b} p = sym A a b p
+_⁻¹ refl = refl
 
 -- induction on p and then q
 trans₁ : {α : Level} (A : Set α) → (a b c : A) → a ≡ b → b ≡ c → a ≡ c
-trans₁ A _ _ _ refl refl = refl
-{-
 trans₁ A a b c p q = (ind A
                           (λ x y _ → (z : A) → y ≡ z → x ≡ z)
                           (λ x z r → ind A (λ x z _ → x ≡ z) (λ _ → refl) x z r)
                           a b p) c q
--}
 
 infixl 5 _◾_
 _◾_ : {α : Level} {A : Set α} → {a b c : A} → a ≡ b → b ≡ c → a ≡ c
-_◾_ {α} {A} {a} {b} {c} p q = trans₁ A a b c p q
+_◾_ refl refl = refl
 
 -- Lemma 2.1.4(i)
 
@@ -79,6 +84,14 @@ p≡refl◾p {α} {A} {x} {y} p = ind A
                              (λ c → refl {α} {_≡_ {α} {A} c c} {refl {α} {A} {c}})
                              x y p
 -}
+
+-- explcit symmetric versions since these are normally used
+refl◾p≡p : {α : Level} {A : Set α} → {x y : A} → (p : x ≡ y) → refl {α} {A} {x} ◾ p ≡ p
+refl◾p≡p refl = refl
+
+p◾refl≡p : {α : Level} {A : Set α} → {x y : A} → (p : x ≡ y) → p ◾ refl {α} {A} {y} ≡ p
+p◾refl≡p refl = refl
+
 
 -- Lemma 2.1.4(ii)
 
@@ -132,6 +145,11 @@ p◾[q◾r]≡[p◾q]◾r {α} {A} {x} {y} {z} {w} p q r =
 p◾[q◾r]≡[p◾q]◾r' : {α : Level} {A : Set α} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → p ◾ (q ◾ r) ≡ (p ◾ q) ◾ r
 p◾[q◾r]≡[p◾q]◾r' {α} {A} {x} {y} {z} {w} refl refl refl = refl {α} {x ≡ x} {refl {α} {A} {x}}
 
+-- Lemma 2.2.1 (earlier since we need ap for 2.1.6)
+
+ap : {α β : Level} {A : Set α} {B : Set β} {a b : A} (f : A → B) → a ≡ b → f a ≡ f b
+ap f refl = refl
+
 -- Theorem 2.1.6 (Eckmann-Hilton)
 
 Ω : {α : Level} (A : Set α) → (a : A) → Set α
@@ -143,10 +161,10 @@ p◾[q◾r]≡[p◾q]◾r' {α} {A} {x} {y} {z} {w} refl refl refl = refl {α} {
 infixl 5 _◾ʳ_  _◾ˡ_ _★_ _★′_
 
 _◾ʳ_ : {ℓ : Level} {A : Set ℓ} {a b c : A} {p q : a ≡ b} (α : p ≡ q) → (r : b ≡ c) → p ◾ r ≡ q ◾ r
-_◾ʳ_ {p = p} {q = q} α refl = (p≡p◾refl p)⁻¹ ◾ α ◾ (p≡p◾refl q)
+_◾ʳ_ {p = p} {q = q} α refl = p◾refl≡p p ◾ α ◾ (p≡p◾refl q)
 
 _◾ˡ_ : {ℓ : Level} {A : Set ℓ} {a b c : A} {r s : b ≡ c} (q : a ≡ b) → (β : r ≡ s) → q ◾ r ≡ q ◾ s
-_◾ˡ_ {r = r} {s = s} refl β = (p≡refl◾p r)⁻¹ ◾ β ◾ (p≡refl◾p s)
+_◾ˡ_ {r = r} {s = s} refl β = refl◾p≡p r ◾ β ◾ (p≡refl◾p s)
 
 _★_ : {ℓ : Level} {A : Set ℓ} {a b c : A} {p q : a ≡ b} {r s : b ≡ c} (α : p ≡ q) → (β : r ≡ s) → p ◾ r ≡ q ◾ s
 _★_ {q = q} {r = r} α β = (α ◾ʳ r) ◾ (q ◾ˡ β)
@@ -154,12 +172,9 @@ _★_ {q = q} {r = r} α β = (α ◾ʳ r) ◾ (q ◾ˡ β)
 _★′_ : {ℓ : Level} {A : Set ℓ} {a b c : A} {p q : a ≡ b} {r s : b ≡ c} (α : p ≡ q) → (β : r ≡ s) → p ◾ r ≡ q ◾ s
 _★′_ {p = p} {s = s} α β = (p ◾ˡ β) ◾ (α ◾ʳ s)
 
-ap : {α β : Level} {A : Set α} {B : Set β} {a b : A} (f : A → B) → a ≡ b → f a ≡ f b
-ap f refl = refl
-
 transLemma : {ℓ : Level} {A : Set ℓ} {a : A} (α : refl {ℓ} {A} {a} ≡ refl {ℓ} {A} {a}) →
              refl {ℓ} {a ≡ a} {refl} ◾ α ◾ refl {ℓ} {a ≡ a} {refl} ≡ α 
-transLemma α = (ap (_◾ refl) (p≡refl◾p α)⁻¹) ◾ (p≡p◾refl α)⁻¹
+transLemma α = ap (_◾ refl) (refl◾p≡p α) ◾ p◾refl≡p α
 
 transLift : {α : Level} {A : Set α} → {a b c : A} → {p q : a ≡ b} → {r s : b ≡ c} → p ≡ q → r ≡ s → p ◾ r ≡ q ◾ s
 transLift refl refl = refl
@@ -176,25 +191,68 @@ transLift refl refl = refl
 Ω²-commutative : {ℓ : Level} {A : Set ℓ}{a : A} (α β : Ω² A a) → α ◾ β ≡ β ◾ α
 Ω²-commutative α β = (★≡◾ α β)⁻¹ ◾ (★≡★′ α β) ◾ (★′≡◾ α β)
 
--- If UIP holds at A and a, then Ω is also commutative since everything is forced to be refl
+-- If UIP holds at A and a, then Ω is also commutative since identity proofs are all refl
 
 UIP : {ℓ : Level} (A : Set ℓ)(a : A) → Set ℓ
 UIP A a = (p : a ≡ a) → p ≡ refl
 
 UIP→transrefl : {ℓ : Level} {A : Set ℓ}{a : A} (uip : UIP A a) (α β : Ω A a) → α ◾ β ≡ refl
-UIP→transrefl uip α β = ap (_◾ β) (uip α) ◾ (p≡refl◾p β)⁻¹ ◾ uip β
+UIP→transrefl uip α β = ap (_◾ β) (uip α) ◾ refl◾p≡p β ◾ uip β
 
 UIP→Ω-commutative : {ℓ : Level} {A : Set ℓ}{a : A} (uip : UIP A a) (α β : Ω A a) → α ◾ β ≡ β ◾ α
 UIP→Ω-commutative uip α β = UIP→transrefl uip α β ◾ (UIP→transrefl uip β α)⁻¹
 
+{-
+xx : {ℓ : Level} {A : Set ℓ}{a : A} (α β : Ω² A a) → Ω²-commutative α β ◾ Ω²-commutative β α ≡ refl {ℓ} {Ω² A a} {α ◾ β}
+xx α β = {!!}
+-}
+
 -- Lemma 2.3.2
 
-transport : {α β : Level} {A : Set α} → {x y : A} → (P : A → Set β) → (p : x ≡ y) → P x → P y
+transport : {α β : Level} {A : Set α} {x y : A} (P : A → Set β) (p : x ≡ y) → P x → P y
 transport P refl q = q
 
-lift : {α β : Level} {A : Set α} → {x y : A} → (P : A → Set β) → (u : P x) → (p : x ≡ y) → (x , u) ≡ (y , transport P p u)
+lift : {α β : Level} {A : Set α} {x y : A} (P : A → Set β) (u : P x) (p : x ≡ y) → (x , u) ≡ (y , transport P p u)
 lift P u refl = refl
 
+,-injectiveˡ : {α β : Level} {A : Set α} {B : A → Set β} {a c : A} {b : B a} {d : B c} → (a , b) ≡ (c , d) → a ≡ c
+,-injectiveˡ refl = refl
+
+liftProp : {α β : Level} {A : Set α} {x y : A} (P : A → Set β) (u : P x) (p : x ≡ y) → ,-injectiveˡ (lift P u p) ≡ p
+liftProp P u refl = refl
+
+-- Lemma 2.3.4
+
+apd : {α β : Level} {A : Set α} {P : A → Set β} (f : (x : A) → P x) {x y : A} (p : x ≡ y) → transport P p (f x) ≡ f (y)
+apd f refl = refl
+
+-- Lemma 2.3.5
+
+transportconst : {α β : Level} {A : Set α} (B : Set β) {x y : A} (p : x ≡ y) (b : B) → transport (λ _ → B) p b ≡ b
+transportconst B refl b = refl
+
+-- Lemma 2.3.8
+
+lemma2-3-8 : {α β : Level} {A : Set α} {B : Set β} {x y : A} (f : A → B) (p : x ≡ y) → apd f p ≡ transportconst B p (f x) ◾ ap f p
+lemma2-3-8 f refl = refl
+
+-- Lemma 2.3.9
+
+transport-trans : {α β : Level} {A : Set α} {P : A → Set β} {x y z : A} (p : x ≡ y) (q : y ≡ z) (u : P x) →
+  transport P q (transport P p u) ≡ transport P (p ◾ q) u
+transport-trans refl refl u = refl
+
+-- Lemma 2.3.10
+
+transport-ap : {α β γ : Level} {A : Set α} {B : Set β} {P : B → Set γ} {x y : A} {f : A → B} (p : x ≡ y) (u : P (f x)) →
+  transport (P ∘ f) p u ≡ transport P (ap f p) u
+transport-ap refl u = refl
+
+-- Lemma 2.3.11
+
+transport-family : {α β γ : Level} {A : Set α} {P : A → Set β} {Q : A → Set γ} {x y : A} {f : (x : A) → P x → Q x} (p : x ≡ y) (u : P x) →
+  transport Q p (f x u) ≡ f y (transport P p u)
+transport-family refl u = refl
 
 -- EXERCISES
 
